@@ -1,31 +1,54 @@
-const menuButton = document.querySelector('.menu-toggle');
-const mainNav = document.querySelector('#main-nav');
+/* Rishi Keshan — portfolio behaviour.
 
-menuButton?.addEventListener('click', () => {
-  const isOpen = mainNav.classList.toggle('open');
-  menuButton.setAttribute('aria-expanded', String(isOpen));
-});
+   Deliberately small. The hero chart animates in pure CSS, so nothing
+   visual depends on this file loading or running. All that is left is the
+   mobile menu and the footer year, each isolated so one cannot break the
+   other. */
 
-mainNav?.querySelectorAll('a').forEach((link) => {
-  link.addEventListener('click', () => {
-    mainNav.classList.remove('open');
-    menuButton?.setAttribute('aria-expanded', 'false');
-  });
-});
+(function () {
+  "use strict";
 
-const revealItems = document.querySelectorAll('.reveal');
-if ('IntersectionObserver' in window) {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
+  function job(fn) {
+    try {
+      fn();
+    } catch (error) {
+      if (window.console && console.warn) {
+        console.warn("portfolio: a non-critical step failed", error);
+      }
+    }
+  }
+
+  /* ── mobile menu ─────────────────────────────────────────── */
+  job(function () {
+    var toggle = document.querySelector(".menu-toggle");
+    var nav = document.getElementById("main-nav");
+    if (!toggle || !nav) return;
+
+    function close() {
+      nav.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded", "false");
+    }
+
+    toggle.addEventListener("click", function () {
+      var open = nav.classList.toggle("is-open");
+      toggle.setAttribute("aria-expanded", String(open));
+    });
+
+    nav.addEventListener("click", function (event) {
+      if (event.target.closest && event.target.closest("a")) close();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && nav.classList.contains("is-open")) {
+        close();
+        toggle.focus();
       }
     });
-  }, { threshold: 0.12 });
-  revealItems.forEach((element) => observer.observe(element));
-} else {
-  revealItems.forEach((element) => element.classList.add('is-visible'));
-}
+  });
 
-document.getElementById('year').textContent = new Date().getFullYear();
+  /* ── footer year ─────────────────────────────────────────── */
+  job(function () {
+    var year = document.getElementById("year");
+    if (year) year.textContent = String(new Date().getFullYear());
+  });
+})();
